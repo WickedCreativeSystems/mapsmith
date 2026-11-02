@@ -28,6 +28,9 @@ export interface ShipPalette {
 	wallWidth: number;
 	/** hatching round the floors, for rock */
 	rock?: string;
+	/** ink for flagstones or planks on a plain floor, and a shadow inside the walls; flat floors without it */
+	floorInk?: string;
+	floorKind?: 'stone' | 'wood';
 	/** painted textures instead of flat colour: data URIs */
 	paint?: Paint;
 }
@@ -75,7 +78,7 @@ export const DUNGEON_LIGHT: ShipPalette = {
 	wall: '#3a322a', hull: '#221d18', door: '#6b4a2b', airlock: '#6b4a2b', hatch: '#6b4a2b', window: '#8fa7b8',
 	text: '#2b2118', stamp: '#3a3028', stampFill: '#f8f3e8', stampAccent: '#cbbfa6', badge: '#fffaf0', badgeInk: '#7a2e1f',
 	tints: ['#f8f3e8', '#f1e9d7', '#eee7de', '#f4e7d9', '#e9eddd', '#f5efd5', '#ece6e1', '#f0e3d7', '#dfe0c6'],
-	hullWidth: 0.24, wallWidth: 0.1, rock: 'rgba(40,30,20,0.4)',
+	hullWidth: 0.24, wallWidth: 0.1, rock: 'rgba(40,30,20,0.55)', floorInk: 'rgba(60,45,30,0.16)',
 };
 
 export const DUNGEON_DARK: ShipPalette = {
@@ -83,7 +86,7 @@ export const DUNGEON_DARK: ShipPalette = {
 	wall: '#b9b2a2', hull: '#ddd6c4', door: '#d9a441', airlock: '#d9a441', hatch: '#d9a441', window: '#9be7ff',
 	text: '#ece6d8', stamp: '#cfc6b2', stampFill: '#2c3038', stampAccent: '#5c5648', badge: '#d9a441', badgeInk: '#1a1400',
 	tints: ['#2c3038', '#31343b', '#2e3540', '#39312f', '#2c3732', '#37352b', '#32313b', '#353030', '#232a22'],
-	hullWidth: 0.22, wallWidth: 0.09, rock: 'rgba(220,210,190,0.2)',
+	hullWidth: 0.22, wallWidth: 0.09, rock: 'rgba(220,210,190,0.28)', floorInk: 'rgba(0,0,0,0.25)',
 };
 
 const S = 24; // px per grid square
@@ -186,18 +189,16 @@ export function renderDeck(d: Deck, o: ShipRenderOptions = {}): Node {
 	}
 	if (paint?.sunk) kids.push(el('path', { d: runs.join(''), fill: 'none', stroke: 'rgba(0,0,0,0.45)', 'stroke-width': f(S * 0.7), 'stroke-linejoin': 'round' }));
 	else if (P.rock && !paint) {
-		// a band of hatching round every floor, the way rock is drawn on a hand-made dungeon
-		kids.push(
-			el('defs', {}, [
-				el('pattern', { id: `${id}-rock`, width: 5, height: 5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, [
-					el('path', { d: 'M0 0V5', stroke: P.rock, 'stroke-width': 1.2 }),
-				]),
-			]),
-		);
-		kids.push(el('path', { d: runs.join(''), fill: 'none', stroke: `url(#${id}-rock)`, 'stroke-width': f(S * 1.4), 'stroke-linejoin': 'round' }));
+		// a band of hatching round every floor, in little clusters of strokes the way rock is drawn by hand
+		kids.push(el('defs', {}, [hatchPattern(`${id}-rock`, P.rock)]));
+		kids.push(el('path', { d: runs.join(''), fill: 'none', stroke: `url(#${id}-rock)`, 'stroke-width': f(S * 1.5), 'stroke-linejoin': 'round' }));
 	}
 	for (const [fill, parts] of floors) kids.push(el('path', { d: parts.join(''), fill }));
 	if (paint?.dim) kids.push(el('rect', { width: w * S, height: h * S, fill: '#000', opacity: paint.dim }));
+	if (!paint && P.floorInk) {
+		kids.push(el('defs', {}, [floorPattern(`${id}-floor`, P.floorInk, P.floorKind ?? 'stone')]));
+		kids.push(el('path', { d: runs.join(''), fill: `url(#${id}-floor)` }));
+	}
 	if (tex.size)
 		kids.splice(1, 0, el('defs', {}, [...tex].map(([uri, tid]) =>
 			el('pattern', { id: tid, width: TILE * S, height: TILE * S, patternUnits: 'userSpaceOnUse' }, [el('image', { href: uri, width: TILE * S, height: TILE * S, preserveAspectRatio: 'none' })]),
@@ -215,6 +216,14 @@ export function renderDeck(d: Deck, o: ShipRenderOptions = {}): Node {
 
 	// walls, then the hull over them
 	const { segs, centres } = derived(d);
+	// a soft shadow along the inside of every wall, so the rooms read as sunk below them
+	if (!paint && P.floorInk) {
+		const all = segs.map((s) => `M${X(s.x1)} ${Y(s.y1)}L${X(s.x2)} ${Y(s.y2)}`).join('');
+		if (all) {
+			kids.push(el('defs', {}, [el('clipPath', { id: `${id}-in` }, [el('path', { d: runs.join('') })])]));
+			kids.push(el('path', { d: all, fill: 'none', stroke: 'rgba(0,0,0,0.1)', 'stroke-width': f(S * 0.6), 'stroke-linecap': 'square', 'clip-path': `url(#${id}-in)` }));
+		}
+	}
 	for (const hull of [false, true]) {
 		const path = segs
 			.filter((s) => s.hull === hull)
@@ -388,4 +397,47 @@ function drawBreaches(d: Deck, P: ShipPalette, X: (x: number) => number, Y: (y: 
 		el('path', { d: edges.join(''), fill: 'none', stroke: P.hull, 'stroke-width': f(Math.max(1, P.wallWidth * S)), 'stroke-linecap': 'round' }),
 		el('path', { d: debris.join(''), fill: P.wall, opacity: 0.8 }),
 	]);
+}
+
+// Clusters of three or four short parallel strokes, each cluster turned its own way, repeating every few squares
+function hatchPattern(pid: string, ink: string): Node {
+	const c = S * 0.6, n = 5, T = c * n;
+	const turns = [0.3, 1.9, 1.1, 2.6, 0.7, 2.2, 1.5, 0.1, 2.9, 1.3, 0.5, 2.4, 1.7, 0.9, 2.8, 0.2, 1.2, 2.0, 0.6, 2.5, 1.6, 0.4, 2.7, 1.0, 2.1];
+	let d = '';
+	for (let i = 0; i < n * n; i++) {
+		const cx = (i % n) * c + c / 2, cy = Math.floor(i / n) * c + c / 2, a = turns[i] ?? 0;
+		const ux = Math.cos(a), uy = Math.sin(a), vx = -uy, vy = ux;
+		const k = i % 3 ? 4 : 3, half = c * 0.42;
+		for (let j = 0; j < k; j++) {
+			const o = (j - (k - 1) / 2) * (c / (k + 0.6));
+			const len = half * (0.75 + ((i * 7 + j * 3) % 5) * 0.06);
+			d += `M${f(cx + vx * o - ux * len)} ${f(cy + vy * o - uy * len)}L${f(cx + vx * o + ux * len)} ${f(cy + vy * o + uy * len)}`;
+		}
+	}
+	return el('pattern', { id: pid, width: f(T), height: f(T), patternUnits: 'userSpaceOnUse' }, [el('path', { d, stroke: ink, 'stroke-width': 1.1, 'stroke-linecap': 'round', fill: 'none' })]);
+}
+
+// Flagstones of uneven widths in rows, or planks with staggered joints, two squares to a repeat
+function floorPattern(pid: string, ink: string, kind: 'stone' | 'wood'): Node {
+	const T = S * 2;
+	let d = '';
+	if (kind === 'wood') {
+		const rows = 8, h = T / rows;
+		for (let r = 0; r < rows; r++) {
+			d += `M0 ${f(r * h)}H${T}`;
+			const j = ((r * 5) % 8) / 8;
+			d += `M${f(j * T)} ${f(r * h)}v${f(h)}`;
+		}
+	} else {
+		const rows = [0.7, 0.55, 0.75];
+		const cuts = [[0.45, 1.2], [0.8, 1.55], [0.25, 1.0, 1.7]];
+		let y = 0;
+		rows.forEach((rh, r) => {
+			const h = (rh / 2) * T;
+			if (r) d += `M0 ${f(y)}H${T}`;
+			for (const x of cuts[r] ?? []) d += `M${f((x / 2) * T)} ${f(y)}v${f(h)}`;
+			y += h;
+		});
+	}
+	return el('pattern', { id: pid, width: T, height: T, patternUnits: 'userSpaceOnUse' }, [el('path', { d, stroke: ink, 'stroke-width': 1, fill: 'none' })]);
 }

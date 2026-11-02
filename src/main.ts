@@ -471,7 +471,7 @@ class TownMap extends MarkdownRenderChild {
 
 		const dark = document.body.hasClass('theme-dark');
 		const id = `ms${hashSeed(`${o.seed}:${o.kind}:${at}`).toString(36)}`;
-		this.drawPlan(root, s, deck, 'About the place', { ...(dark ? DUNGEON_DARK : DUNGEON_LIGHT), rock: undefined, paint: plain ? undefined : buildingPaint(deck.name === CELLAR, dark) }, id, 'building', solo);
+		this.drawPlan(root, s, deck, 'About the place', { ...(dark ? DUNGEON_DARK : DUNGEON_LIGHT), rock: undefined, floorKind: deck.name === CELLAR ? 'stone' : 'wood', paint: plain ? undefined : buildingPaint(deck.name === CELLAR, dark) }, id, 'building', solo);
 	}
 
 	/** The Explore button. In solo play, also what has been seen, and what was inside each room walked into,

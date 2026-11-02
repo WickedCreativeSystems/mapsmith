@@ -1,7 +1,7 @@
 // What the Foundry module makes from a seed: one scene per map (a ship or a building gives one per deck or floor),
 // each with the players' picture as an SVG, its Universal VTT data for walls, doors and lights, and the GM's key.
 // Always the plain look: the module carries no generated art. Pure code, so it is tested with the plugin's own tests.
-import { generateBuilding } from '../src/building';
+import { CELLAR, generateBuilding } from '../src/building';
 import { generateDungeon } from '../src/dungeon';
 import { parseBlock, type MapKind } from '../src/block';
 import { LIGHT, renderTown, toString } from '../src/render';
@@ -95,7 +95,7 @@ export function make(block: string): Result {
 	const many = s.decks.length > 1;
 	const scenes = s.decks.map((deck) => {
 		const data = uvttData(deck, 0);
-		const pic = renderDeck(deck, { palette, id: 'vtt', players: true });
+		const pic = renderDeck(deck, { palette: p.map === 'building' && deck.name !== CELLAR ? { ...palette, floorKind: 'wood' } : palette, id: 'vtt', players: true });
 		const { w, h } = sized(pic, data);
 		return { name: many ? `${title}, ${deck.name.toLowerCase()}` : title, svg: toString(pic), w, h, data, distance: 5, units: 'ft' };
 	});

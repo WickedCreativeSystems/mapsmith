@@ -4,7 +4,7 @@ import esbuild from 'esbuild';
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 const SITE = 'https://bulkhead.bananafest-destiny.com/mapsmith/foundry';
 const out = new URL('../../public/mapsmith/foundry/', import.meta.url).pathname;
 const tmp = new URL('../../../.tools/foundry-mapsmith/', import.meta.url).pathname;

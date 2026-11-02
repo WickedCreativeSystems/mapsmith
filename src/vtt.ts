@@ -46,6 +46,8 @@ export function uvttData(d: Deck, pixelsPerGrid: number): UVTT {
 		});
 	}
 	const objects_line_of_sight = d.stamps.filter((st) => blocksSight(st.kind)).map((st) => {
+		// A pillar is drawn as a circle half a square across: block just that, so tokens can walk between pillars.
+		if (st.kind === 'pillar') return [0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => at(st.x + 0.5 + 0.26 * Math.cos((i * Math.PI) / 4), st.y + 0.5 + 0.26 * Math.sin((i * Math.PI) / 4)));
 		const [w, h] = stampSize(st);
 		return [at(st.x + 0.1, st.y + 0.1), at(st.x + w - 0.1, st.y + 0.1), at(st.x + w - 0.1, st.y + h - 0.1), at(st.x + 0.1, st.y + h - 0.1), at(st.x + 0.1, st.y + 0.1)];
 	});

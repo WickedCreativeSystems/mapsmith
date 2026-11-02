@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { KINDS, blockFor, foundryPlacements, make } from '../foundry/make';
+import { KINDS, blockFor, foundryPlacements, make, sceneData } from '../foundry/make';
 
 describe('Mapsmith for Foundry', () => {
 	for (const kind of KINDS)
@@ -23,5 +23,15 @@ describe('Mapsmith for Foundry', () => {
 	});
 	it('says what is wrong with a bad choice', () => {
 		expect(() => make(blockFor('dungeon', 'x', { kind: 'volcano' }))).toThrow(/kind can be/);
+	});
+
+	it('puts the picture on a level when Foundry has levels (v14), and only on the scene when not (v13)', () => {
+		const m = make(blockFor('dungeon', 'saltmarch', {})).scenes[0]!;
+		const v14 = sceneData(m, 'mapsmith/x.png', false, 'j', 20, 'defaultLevel0000') as Record<string, unknown>;
+		expect(v14.levels).toEqual([{ _id: 'defaultLevel0000', name: m.name, background: { src: 'mapsmith/x.png' } }]);
+		expect(v14.initialLevel).toBe('defaultLevel0000');
+		const v13 = sceneData(m, 'mapsmith/x.png', false) as Record<string, unknown>;
+		expect(v13.levels).toBeUndefined();
+		expect(v13.background).toEqual({ src: 'mapsmith/x.png' });
 	});
 });

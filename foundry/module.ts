@@ -169,12 +169,14 @@ async function build(r: Result) {
 	await FP.createDirectory('data', ID, {}).catch(() => undefined);
 	const seed = /^seed: (.*)$/m.exec(r.block)?.[1] ?? '';
 	const journal = await JournalEntry.create({ name: `${r.title}: the GM's key`, pages: journalPages(r) });
+	// Foundry 14 puts the picture on a level; 13 has none
+	const level: string | undefined = Scene.schema?.has?.('levels') ? Scene.metadata?.defaultLevelId : undefined;
 	let first: any;
 	for (const m of r.scenes) {
 		const file = new File([await png(m)], `${fileName(m.name, seed)}.png`, { type: 'image/png' });
 		const up = await FP.upload('data', ID, file, {}, { notify: false });
 		const src = up?.path ?? `${ID}/${file.name}`;
-		const scene = await Scene.create(sceneData(m, src, pro, journal?.id, CONST?.WALL_SENSE_TYPES?.NORMAL));
+		const scene = await Scene.create(sceneData(m, src, pro, journal?.id, CONST?.WALL_SENSE_TYPES?.NORMAL, level));
 		first ??= scene;
 		try {
 			const t = await scene.createThumbnail();

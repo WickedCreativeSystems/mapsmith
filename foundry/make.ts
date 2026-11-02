@@ -123,10 +123,13 @@ export function foundryPlacements(data: UVTT, distance: number) {
 	return { walls, lights };
 }
 
-/** The scenes' scene data: the picture's path, the grid, and with Pro the walls, doors and lights */
-export function sceneData(m: Made, src: string, pro: boolean, journal?: string, N = 20) {
+/** The scenes' scene data: the picture's path, the grid, and with Pro the walls, doors and lights.
+ *  Foundry 14 keeps a scene's picture on its levels, not on the scene (2 Nov: a v14 scene given only `background`
+ *  came out with no map), so with a level id the picture goes on one level as well. Foundry 13 has no levels. */
+export function sceneData(m: Made, src: string, pro: boolean, journal?: string, N = 20, level?: string) {
 	const P = m.data.resolution.pixels_per_grid;
-	const base = { name: m.name, width: m.w, height: m.h, padding: 0, background: { src }, grid: { type: 1, size: P, distance: m.distance, units: m.units }, tokenVision: true, environment: { globalLight: { enabled: true } }, ...(journal ? { journal } : {}) };
+	const levels = level ? { levels: [{ _id: level, name: m.name, background: { src } }], initialLevel: level } : {};
+	const base = { name: m.name, width: m.w, height: m.h, padding: 0, background: { src }, ...levels, grid: { type: 1, size: P, distance: m.distance, units: m.units }, tokenVision: true, environment: { globalLight: { enabled: true } }, ...(journal ? { journal } : {}) };
 	if (!pro) return base;
 	const { walls, lights } = foundryPlacements(m.data, m.distance);
 	return {

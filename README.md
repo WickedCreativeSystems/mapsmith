@@ -157,7 +157,7 @@ Above the plan is what the place is known for, and a hook. One room in each buil
 
 ## The look
 
-Every map is painted: grass, cobbles and water in a town; flagstones, rock and planks inside; steel plate and grating on a ship, out among the stars. The textures are part of the plugin, so nothing is fetched. Add `look: plain` to any block for the flat drawing instead.
+Every map is painted: grass, cobbles and water in a town; flagstones, rock and planks inside; steel plate and grating on a ship, out among the stars. The textures are part of the plugin, so nothing is fetched. Press **Painted** under any map to switch it to **Plain**, the flat inked drawing (or add `look: plain` to the block). The textures came from an image generator; the plain look has no generated art in it, only lines and fills drawn by code.
 
 ## Saving a picture
 

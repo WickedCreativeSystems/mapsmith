@@ -203,6 +203,14 @@ class TownMap extends MarkdownRenderChild {
 		});
 	}
 
+	/** Painted uses the texture pictures; Plain is inked by code alone */
+	lookToggle(bar: HTMLElement, plain: boolean) {
+		const look = bar.createEl('button', { text: plain ? 'Plain' : 'Painted', cls: 'mapsmith-toggle' });
+		look.toggleClass('is-on', !plain);
+		look.setAttr('aria-label', plain ? 'Inked by code alone. Press for the painted textures' : 'Painted textures. Press for the plain inked map, drawn by code alone');
+		look.addEventListener('click', () => this.set('look', plain ? 'painted' : 'plain'));
+	}
+
 	draw() {
 		const root = this.containerEl;
 		root.empty();
@@ -252,6 +260,7 @@ class TownMap extends MarkdownRenderChild {
 		play.toggleClass('is-on', walked !== null);
 		play.setAttr('aria-label', walked ? 'Show the whole map' : 'Play it alone: you start at place 1, and every other place stays unknown until you walk there');
 		play.addEventListener('click', () => this.set('explore', walked ? 'off' : 'on'));
+		this.lookToggle(bar, plain);
 		const again = bar.createEl('button', { text: 'New town', cls: 'mod-cta' });
 		again.addEventListener('click', () => this.set('seed', newSeed()));
 		if (problems.length) root.createDiv({ cls: 'mapsmith-problem', text: problems.join('. ') + '.' });
@@ -321,6 +330,7 @@ class TownMap extends MarkdownRenderChild {
 		const land = bar.createEl('button', { text: green ? 'Green' : 'Parchment', cls: 'mapsmith-toggle' });
 		land.toggleClass('is-on', green);
 		land.addEventListener('click', () => this.set('land', green ? 'parchment' : 'green'));
+		this.lookToggle(bar, plain);
 		const again = bar.createEl('button', { text: 'New region', cls: 'mod-cta' });
 		again.addEventListener('click', () => this.set('seed', newSeed()));
 		if (problems.length) root.createDiv({ cls: 'mapsmith-problem', text: problems.join('. ') + '.' });
@@ -401,6 +411,7 @@ class TownMap extends MarkdownRenderChild {
 		mood.toggleClass('is-on', wreck);
 		mood.addEventListener('click', () => this.set('mood', wreck ? 'intact' : 'derelict'));
 		const solo = this.soloPlay(bar, deck, o.explore, o.found, boarding(deck), (num) => onEntering(o.seed, o.mood, o.size, num));
+		this.lookToggle(bar, plain);
 		const again = bar.createEl('button', { text: 'New ship', cls: 'mod-cta' });
 		again.addEventListener('click', () => this.set('seed', newSeed()));
 		if (problems.length) root.createDiv({ cls: 'mapsmith-problem', text: problems.join('. ') + '.' });
@@ -423,6 +434,7 @@ class TownMap extends MarkdownRenderChild {
 			sel.addEventListener('change', () => this.set(k, sel.value));
 		}
 		const solo = this.soloPlay(bar, deck, o.explore, o.found, [], (num) => onEntering(o.seed, o.kind, o.size, num));
+		this.lookToggle(bar, plain);
 		const again = bar.createEl('button', { text: 'New dungeon', cls: 'mod-cta' });
 		again.addEventListener('click', () => this.set('seed', newSeed()));
 		if (problems.length) root.createDiv({ cls: 'mapsmith-problem', text: problems.join('. ') + '.' });
@@ -452,6 +464,7 @@ class TownMap extends MarkdownRenderChild {
 		}
 		// upstairs, you come in at the top of the stairs, and in the cellar at the foot of the ladder
 		const solo = this.soloPlay(bar, deck, o.explore, o.found, at ? boarding(deck) : [], (num) => onEntering(o.seed, 'building', 'lair', num));
+		this.lookToggle(bar, plain);
 		const again = bar.createEl('button', { text: 'New building', cls: 'mod-cta' });
 		again.addEventListener('click', () => this.set('seed', newSeed()));
 		if (problems.length) root.createDiv({ cls: 'mapsmith-problem', text: problems.join('. ') + '.' });

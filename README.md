@@ -169,7 +169,7 @@ Everything above is free. [Mapsmith Pro](https://bananafestdestiny.itch.io/mapsm
 
 ![A crypt saved with Pro: the players' map with its walls drawn in red and its doors in blue, as a virtual tabletop reads them](docs/pro.jpg)
 
-In a town every building and the town wall are walls and the gates are doors, on a grid of five metres a square (ten on a large town or city). A region is saved as an overland map with the place names on it, a kilometre a square, for travel. Roll20 imports it as it is, and Foundry reads it with the Universal Battlemap Importer module.
+In a town every building and the town wall are walls and the gates are doors, on a grid of five metres a square (ten on a large town or city). A region is saved as an overland map with the place names on it, a kilometre a square, for travel. Roll20 imports it as it is, and Foundry reads it with the Universal Battlemap Importer module. On Foundry 13 or 14 you can skip the file: [Mapsmith for Foundry](https://bulkhead.bananafest-destiny.com/mapsmith/foundry/) is a module that makes the scene from a seed, with its walls, doors and lights, using the same key. Its source is in the `foundry/` folder.
 
 After you buy, copy your download page's address. Paste it into Mapsmith's settings under **Pro key** and press **Check**. Pro stays on in that vault from then on. Lost it? Type the email you bought with under **Lost your key?**.
 

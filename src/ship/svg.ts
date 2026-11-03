@@ -308,7 +308,32 @@ export function renderDeck(d: Deck, o: ShipRenderOptions = {}): Node {
 		);
 	}
 
-	return el('svg', { xmlns: 'http://www.w3.org/2000/svg', viewBox: `0 0 ${w * S} ${h * S}`, role: 'img', 'aria-label': d.name }, kids);
+	return el('svg', { xmlns: 'http://www.w3.org/2000/svg', viewBox: o.fog ? fogView(o.fog, b, x0, y0, w, h) : `0 0 ${w * S} ${h * S}`, role: 'img', 'aria-label': d.name }, kids);
+}
+
+/** In solo play, the map is framed on what has been seen (and the doors out of it), a few squares round it and
+ *  never less than FOG_MIN squares a side, so the first room isn't a speck in a corner of a dark map. */
+const FOG_MIN = 16;
+export function fogView(fog: Explored, b: { x0: number; y0: number; x1: number; y1: number }, x0: number, y0: number, w: number, h: number): string {
+	let sx0 = Infinity, sy0 = Infinity, sx1 = -Infinity, sy1 = -Infinity;
+	const take = (x: number, y: number) => {
+		sx0 = Math.min(sx0, x);
+		sy0 = Math.min(sy0, y);
+		sx1 = Math.max(sx1, x + 1);
+		sy1 = Math.max(sy1, y + 1);
+	};
+	for (let y = b.y0; y < b.y1; y++) for (let x = b.x0; x < b.x1; x++) if (fog.seen[idx(x, y)]) take(x, y);
+	for (const k of fog.ways) take(k.x, k.y);
+	if (sx0 > sx1) return `0 0 ${w * S} ${h * S}`;
+	const span = (lo: number, hi: number, start: number, size: number): [number, number] => {
+		const want = Math.min(size, Math.max(FOG_MIN, hi - lo + 6));
+		let a = (lo + hi) / 2 - want / 2;
+		a = Math.max(start, Math.min(a, start + size - want));
+		return [a, want];
+	};
+	const [vx, vw] = span(sx0, sx1, x0, w);
+	const [vy, vh] = span(sy0, sy1, y0, h);
+	return `${f((vx - x0) * S)} ${f((vy - y0) * S)} ${f(vw * S)} ${f(vh * S)}`;
 }
 
 function door(k: Door, P: ShipPalette, X: (x: number) => number, Y: (y: number) => number, players = false): Node {

@@ -11,6 +11,22 @@ import { toString } from '../src/render';
 const deckOf = (seed: string, kind: 'crypt' | 'keep' | 'mine' = 'crypt') => generateDungeon('dungeon', kind, seed).decks[0]!;
 
 describe('solo play', () => {
+	it('frames the seen rooms, then the whole map once it has all been seen', () => {
+		const box = (svg: string) => (/viewBox="([^"]+)"/.exec(svg)?.[1] ?? '').split(' ').map(Number);
+		for (const seed of ['a', 'b', 'c']) {
+			const d = deckOf(seed);
+			const full = box(toString(renderDeck(d, { id: 't' })));
+			const first = box(toString(renderDeck(d, { id: 't', fog: explore(d, [1]) })));
+			expect(first[2]! * first[3]!).toBeLessThan(full[2]! * full[3]!);
+			// inside the map, and never a speck: at least 16 squares a side or the whole side
+			expect(first[0]!).toBeGreaterThanOrEqual(0);
+			expect(first[0]! + first[2]!).toBeLessThanOrEqual(full[2]! + 0.01);
+			expect(first[2]!).toBeGreaterThanOrEqual(Math.min(16 * 24, full[2]!) - 0.01);
+			const all = keyEntries(d).map((r) => r.num);
+			expect(box(toString(renderDeck(d, { id: 't', fog: explore(d, all) })))[2]).toBeLessThanOrEqual(full[2]!);
+		}
+	});
+
 	it('starts in room 1 with only its doors leading on', () => {
 		for (const seed of ['a', 'b', 'c', 'd']) {
 			const d = deckOf(seed);

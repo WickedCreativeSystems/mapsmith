@@ -3,6 +3,7 @@
 import { App, Notice, installDomHelpers, requestUrl } from '../test/obsidian-shim';
 import type { UVTT } from '../src/vtt';
 import MapsmithPlugin from '../src/main';
+import { drawPreview, previewCount } from '../src/preview';
 
 installDomHelpers();
 
@@ -213,37 +214,9 @@ Notice.show = (msg) => {
 
 /** The players' map with the file's walls in red, doors in blue, windows in green and lights in yellow, on a canvas. */
 async function preview(d: UVTT, png: string) {
-	const box = $<HTMLDialogElement>('#preview'), cv = $<HTMLCanvasElement>('#preview canvas');
-	const img = new Image();
-	img.src = 'data:image/png;base64,' + png;
-	await img.decode();
-	const k = Math.min(1, 1400 / img.width), g = d.resolution.pixels_per_grid * k;
-	cv.width = Math.round(img.width * k);
-	cv.height = Math.round(img.height * k);
-	const c = cv.getContext('2d')!;
-	c.drawImage(img, 0, 0, cv.width, cv.height);
-	const line = (pts: { x: number; y: number }[], colour: string, w: number) => {
-		c.strokeStyle = colour;
-		c.lineWidth = w;
-		c.lineCap = 'round';
-		c.beginPath();
-		pts.forEach((q, i) => (i ? c.lineTo(q.x * g, q.y * g) : c.moveTo(q.x * g, q.y * g)));
-		c.stroke();
-	};
-	const w = Math.max(2, g / 8);
-	for (const l of d.line_of_sight) line(l, '#e8322c', w);
-	for (const l of d.objects_line_of_sight) line(l, '#e8322c', w / 2);
-	for (const q of d.portals) line(q.bounds, q.closed ? '#2f7cf6' : '#2fbf5a', w * 1.6);
-	for (const l of d.lights) {
-		c.fillStyle = 'rgba(255, 200, 60, .9)';
-		c.beginPath();
-		c.arc(l.position.x * g, l.position.y * g, Math.max(3, g / 4), 0, Math.PI * 2);
-		c.fill();
-	}
-	const n = (k: number, one: string, many: string) => `${k} ${k === 1 ? one : many}`;
-	const doors = d.portals.filter((q) => q.closed).length, windows = d.portals.length - doors, walls = d.line_of_sight.length + d.objects_line_of_sight.length;
-	const parts = [n(walls, 'wall', 'walls'), n(doors, 'door', 'doors'), ...(windows ? [n(windows, 'window or barred gate', 'windows and barred gates')] : []), ...(d.lights.length ? [n(d.lights.length, 'light', 'lights')] : [])];
-	$('#preview-count').textContent = walls ? `This one has ${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}.` : 'A region has no walls: it saves as a travel map with its place names on it, a kilometre a square, ready to drop into a scene.';
+	const box = $<HTMLDialogElement>('#preview');
+	await drawPreview($<HTMLCanvasElement>('#preview canvas'), d, png);
+	$('#preview-count').textContent = previewCount(d);
 	box.showModal();
 }
 $('#preview-close').addEventListener('click', () => $<HTMLDialogElement>('#preview').close());

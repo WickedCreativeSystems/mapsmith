@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { App, Notice, ctx, installDomHelpers, requestUrl } from './obsidian-shim';
+import { App, Modal, Notice, ctx, installDomHelpers, requestUrl } from './obsidian-shim';
 import MapsmithPlugin from '../src/main';
 import { generateDungeon } from '../src/dungeon';
 import { cellAt, keyEntries, sideDelta } from '../src/ship/model';
@@ -108,13 +108,18 @@ describe('solo play in a town', () => {
 describe('saving for a virtual tabletop', () => {
 	const DUNGEON = '# Below\n\n```mapsmith\nmap: dungeon\nseed: saltmarch\n```\n';
 
-	it('writes nothing without a key, and says where the key goes', async () => {
-		const { app, el, flush } = setup(DUNGEON);
+	it('writes nothing without a key, and shows what the file would carry beside the buy link', async () => {
+		const { app, el, plugin, flush } = setup(DUNGEON);
+		plugin.drawPng = async () => 'iVBORw0KGgo=';
 		const save = Array.from(el.querySelectorAll('button')).find((b) => b.textContent === 'Save for virtual tabletop')!;
 		save.click();
 		await flush();
 		expect([...app.notes.keys()]).toEqual(['Towns/Map.md']);
-		expect(Notice.last).toContain("Mapsmith's settings");
+		await flush();
+		const box = Modal.last!.contentEl;
+		expect(box.textContent).toMatch(/This one has \d+ walls, \d+ doors?/);
+		expect(box.querySelector('a.mod-cta')!.getAttribute('href')).toBe('https://bananafestdestiny.itch.io/mapsmith-pro');
+		expect(box.textContent).toContain('Pro key');
 	});
 
 	it('has the button under a town too', () => {

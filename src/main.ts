@@ -4,6 +4,7 @@ import { DUNGEON_KINDS, DUNGEON_SIZES, generateDungeon } from './dungeon';
 import { SHIP_SIZES, editBlock, newSeed, noteName, parseBlock, placeNote, regionNote, roomNote, setKey, type BuildingOptions, type DungeonOptions, type Key, type ShipOptions } from './block';
 import { DARK, LIGHT, renderTown, toDom, toString, type Node as SvgNode } from './render';
 import { REGION_WATERS, generateRegion, renderRegion, type RegionOptions } from './region';
+import { ProPreview } from './preview';
 import { hashSeed } from './rng';
 import { generate, type GenResult } from './ship/generate';
 import { keyEntries, type Deck, type RoomInfo } from './ship/model';
@@ -166,7 +167,7 @@ export default class MapsmithPlugin extends Plugin {
 	/** Writes a Universal VTT file next to the note: the players' map, its walls, doors and lights. */
 	async saveVtt(data: UVTT, svg: SvgNode, name: string, sourcePath: string, more = '') {
 		if (!this.settings.vtt) {
-			new Notice(`Saving for a virtual tabletop needs a key. It's $6 once, on itch: ${BUY}. Then paste your key in Mapsmith's settings.`);
+			new ProPreview(this.app, data, await this.drawPng(data, svg), BUY).open();
 			return;
 		}
 		data.image = await this.drawPng(data, svg);

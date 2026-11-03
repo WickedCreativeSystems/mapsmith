@@ -169,7 +169,7 @@ Every map has a **Save as picture** button under it. It writes the players' map 
 
 ## Pro
 
-Everything above is free. [Mapsmith Pro](https://bananafestdestiny.itch.io/mapsmith-pro) is a one-time payment of $6 on itch. It adds a **Save for virtual tabletop** button under every town, region, dungeon, ship and building plan. It writes a Universal VTT file (`.dd2vtt`) beside your note: the map as your players should see it, with no numbers and secret doors drawn as plain wall, plus the walls, doors, windows and lights already placed.
+Everything above is free. [Mapsmith Pro](https://bananafestdestiny.itch.io/mapsmith-pro) is a one-time payment of $6 on itch. It adds a **Save for virtual tabletop** button under every town, region, dungeon, ship and building plan. It writes a Universal VTT file (`.dd2vtt`) beside your note: the map as your players should see it, with no numbers and secret doors drawn as plain wall, plus the walls, doors, windows and lights already placed. Without a key the button is still there: it shows the map you're looking at with what the file would carry drawn over it, so you can see what you'd get before you buy.
 
 ![A crypt saved with Pro: the players' map with its walls drawn in red and its doors in blue, as a virtual tabletop reads them](docs/pro.jpg)
 

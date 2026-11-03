@@ -75,6 +75,19 @@ const body = () => {
 	const info = ctx.getSectionInfo();
 	return note().split('\n').slice(info.lineStart + 1, info.lineEnd).join('\n');
 };
+// Solo play, once each per visit: a crawl started, and a crawl that got three rooms in.
+const solo = new Set<string>();
+function countSolo() {
+	const v = /^explore:\s*(.*)$/m.exec(body())?.[1]?.trim() ?? '';
+	if (!v || v === 'off') return;
+	const seen = v === 'on' ? 1 : v.split(',').filter((x) => x.trim()).length;
+	for (const [what, ok] of [['explore', true], ['explore3', seen >= 3]] as const) {
+		if (ok && !solo.has(what)) {
+			solo.add(what);
+			count(what);
+		}
+	}
+}
 const draw = () => {
 	const info = ctx.getSectionInfo();
 	board.replaceChildren();
@@ -83,6 +96,7 @@ const draw = () => {
 	if (document.activeElement !== source) source.value = body();
 	store({ block: note() });
 	history.replaceState(null, '', toHash(body()));
+	countSolo();
 	const kind = /^map:\s*(\w+)/m.exec(note())?.[1] ?? 'town';
 	for (const b of document.querySelectorAll<HTMLButtonElement>('[data-map]')) b.classList.toggle('mod-cta', b.dataset.map === kind);
 	if (app.active && app.active !== NOTE) {
@@ -239,6 +253,20 @@ function count(what: string) {
 	if (location.hostname !== 'bulkhead.bananafest-destiny.com') return;
 	const kind = /^map:\s*(\w+)/m.exec(note())?.[1] ?? 'town';
 	void fetch(`/e/mapsmith-${what}-${kind}`, { keepalive: true, cache: 'no-store' }).catch(() => {});
+}
+// Where the visit came from: another site's host name, or our own page's path, in the request path because the
+// request log can't read referers. Sent once, before anything else.
+if (location.hostname === 'bulkhead.bananafest-destiny.com') {
+	let from = 'none';
+	try {
+		if (document.referrer) {
+			const u = new URL(document.referrer);
+			from = u.hostname === location.hostname ? 'self' + u.pathname : u.hostname;
+		}
+	} catch {
+		// an unreadable referrer counts as none
+	}
+	void fetch(`/e/mapsmith-from/${from}`, { keepalive: true, cache: 'no-store' }).catch(() => {});
 }
 document.addEventListener('click', (e) => {
 	const a = (e.target as Element).closest?.('a[href*="itch.io/mapsmith-pro"]');

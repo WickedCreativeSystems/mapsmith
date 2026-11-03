@@ -7,13 +7,54 @@ import { SHIP_SIZES, newSeed } from '../src/block';
 import { SIZES, WATERS } from '../src/town';
 import { blockFor, make, sceneData, type Kind, type Made, type Result } from './make';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-declare const game: any, Hooks: any, foundry: any, ui: any, Scene: any, JournalEntry: any, CONST: any;
+// The parts of Foundry's globals this module uses. This file runs in Foundry, never in Obsidian.
+interface Notifications {
+	info(msg: string): void;
+	warn(msg: string): void;
+	error(msg: string): void;
+}
+interface Doc {
+	id?: string;
+	name?: string;
+	update(data: Record<string, unknown>): Promise<unknown>;
+	createThumbnail(): Promise<{ thumb: string }>;
+	view(): Promise<unknown>;
+}
+interface FilePicker {
+	createDirectory(source: string, path: string, options: object): Promise<unknown>;
+	upload(source: string, path: string, file: File, body: object, options: object): Promise<{ path?: string } | false | void>;
+}
+declare const game: {
+	user: { isGM: boolean };
+	settings: {
+		register(ns: string, key: string, data: Record<string, unknown>): void;
+		get(ns: string, key: string): unknown;
+		set(ns: string, key: string, value: unknown): Promise<unknown>;
+	};
+};
+declare const ui: { notifications: Notifications };
+declare const Hooks: {
+	once<A extends unknown[]>(hook: string, fn: (...args: A) => void): number;
+	on<A extends unknown[]>(hook: string, fn: (...args: A) => void): number;
+};
+declare const foundry: {
+	applications: {
+		api: { DialogV2: { wait(options: Record<string, unknown>): Promise<unknown> } };
+		apps: { FilePicker: { implementation: FilePicker } };
+	};
+};
+declare const Scene: { create(data: object): Promise<Doc | undefined>; schema?: { has?(key: string): boolean }; metadata?: { defaultLevelId?: string } };
+declare const JournalEntry: { create(data: object): Promise<Doc | undefined> };
+declare const CONST: { WALL_SENSE_TYPES?: { NORMAL?: number } } | undefined;
 
 const ID = 'mapsmith';
 const SERVER = 'https://bulkhead.bananafest-destiny.com';
 const BUY = 'https://bananafestdestiny.itch.io/mapsmith-pro';
 
+const field = (data: FormData, key: string) => {
+	const v = data.get(key);
+	return typeof v === 'string' ? v : '';
+};
 const word = (v: string) => (v.charAt(0).toUpperCase() + v.slice(1)).replace('-', ' ');
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string);
 
@@ -54,7 +95,7 @@ async function checkKey(key: string) {
 		return;
 	}
 	try {
-		const r = await fetch(`${SERVER}/api/mapsmith/key`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: key.trim() }) });
+		const r = await window.fetch(`${SERVER}/api/mapsmith/key`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: key.trim() }) });
 		const got = (await r.json()) as { ok?: boolean; buy?: string };
 		await game.settings.set(ID, 'pro', !!got.ok);
 		if (got.ok) ui.notifications.info('Mapsmith: good key. New maps come with their walls, doors and lights.');
@@ -70,10 +111,13 @@ Hooks.on('renderSceneDirectory', (_app: unknown, html: HTMLElement | { 0: HTMLEl
 	if (!root || root.querySelector('.mapsmith-new')) return;
 	const where = root.querySelector('.header-actions') ?? root.querySelector('.directory-header');
 	if (!where) return;
-	const b = document.createElement('button');
+	const doc = root.ownerDocument;
+	const b = doc.createElement('button');
 	b.type = 'button';
 	b.className = 'mapsmith-new';
-	b.innerHTML = '<i class="fa-solid fa-map"></i> Mapsmith map';
+	const icon = doc.createElement('i');
+	icon.className = 'fa-solid fa-map';
+	b.append(icon, ' Mapsmith map');
 	b.addEventListener('click', () => void ask());
 	where.append(b);
 });
@@ -98,8 +142,9 @@ export async function ask() {
 		window: { title: 'New Mapsmith map', icon: 'fa-solid fa-map' },
 		position: { width: 440 },
 		content: form('dungeon', newSeed()),
-		render: (_e: Event, dialog: any) => {
-			const el: HTMLElement = dialog.element ?? dialog;
+		render: (_e: Event, dialog: HTMLElement | { element?: HTMLElement }) => {
+			const el = dialog instanceof HTMLElement ? dialog : dialog.element;
+			if (!el) return;
 			const kind = el.querySelector<HTMLSelectElement>('select[name=kind]');
 			kind?.addEventListener('change', () => el.querySelectorAll<HTMLElement>('fieldset[data-for]').forEach((f) => (f.hidden = f.dataset.for !== kind.value)));
 		},
@@ -111,10 +156,10 @@ export async function ask() {
 				default: true,
 				callback: (_e: Event, button: HTMLButtonElement) => {
 					const data = new FormData(button.form ?? undefined);
-					const kind = String(data.get('kind')) as Kind;
+					const kind = field(data, 'kind') as Kind;
 					const choice: Record<string, string> = {};
-					for (const [key] of CHOICES[kind]) choice[key] = String(data.get(`${kind}.${key}`) ?? '');
-					return { kind, seed: String(data.get('seed') ?? '').trim() || newSeed(), choice };
+					for (const [key] of CHOICES[kind]) choice[key] = field(data, `${kind}.${key}`);
+					return { kind, seed: field(data, 'seed').trim() || newSeed(), choice };
 				},
 			},
 			{ action: 'cancel', label: 'Cancel' },
@@ -140,7 +185,7 @@ export async function png(m: Made): Promise<Blob> {
 			img.onerror = () => fail(new Error('the map would not draw'));
 			img.src = url;
 		});
-		const c = document.createElement('canvas');
+		const c = img.ownerDocument.createElement('canvas');
 		c.width = m.w;
 		c.height = m.h;
 		const ctx = c.getContext('2d');
@@ -171,12 +216,13 @@ async function build(r: Result) {
 	const journal = await JournalEntry.create({ name: `${r.title}: the GM's key`, pages: journalPages(r) });
 	// Foundry 14 puts the picture on a level; 13 has none
 	const level: string | undefined = Scene.schema?.has?.('levels') ? Scene.metadata?.defaultLevelId : undefined;
-	let first: any;
+	let first: Doc | undefined;
 	for (const m of r.scenes) {
 		const file = new File([await png(m)], `${fileName(m.name, seed)}.png`, { type: 'image/png' });
 		const up = await FP.upload('data', ID, file, {}, { notify: false });
-		const src = up?.path ?? `${ID}/${file.name}`;
+		const src = (up && up.path) || `${ID}/${file.name}`;
 		const scene = await Scene.create(sceneData(m, src, pro, journal?.id, CONST?.WALL_SENSE_TYPES?.NORMAL, level));
+		if (!scene) continue;
 		first ??= scene;
 		try {
 			const t = await scene.createThumbnail();

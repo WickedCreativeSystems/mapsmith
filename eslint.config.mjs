@@ -6,7 +6,7 @@ export default tseslint.config(
 	{ ignores: ['main.js', 'node_modules/**', 'test/**'] },
 	...obsidianmd.configs.recommended,
 	{
-		files: ['src/**/*.ts'],
+		files: ['src/**/*.ts', 'foundry/**/*.ts'],
 		languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname } },
 		// the plugin's own name
 		rules: { 'obsidianmd/ui/sentence-case': ['warn', { brands: [...DEFAULT_BRANDS, 'Mapsmith'] }] },

@@ -164,10 +164,19 @@ void (async () => {
 	$('#save-note').addEventListener('click', () => {
 		if (app.active) download(app.active, app.notes.get(app.active)?.content ?? '', 'text/markdown');
 	});
+	// The save buttons are under the map, off a laptop's first screen; this opens the same preview from beside the price.
+	const seePro = () => { const b = document.querySelector<HTMLButtonElement>('#see-pro'); if (b) b.hidden = p.settings.vtt; };
+	seePro();
+	document.querySelector('#see-pro')?.addEventListener('click', () => {
+		const b = Array.from(document.querySelectorAll<HTMLButtonElement>('button')).find((x) => x.textContent === 'Save for virtual tabletop');
+		if (!b) return;
+		count('seepro');
+		b.click();
+	});
 	if (document.querySelector('#key-form')) {
 		const key = $<HTMLInputElement>('#key'), said = $('#key-said');
 		key.value = p.settings.key;
-		const pro = () => { $('#pro-on').hidden = !p.settings.vtt; };
+		const pro = () => { $('#pro-on').hidden = !p.settings.vtt; seePro(); };
 		pro();
 		$('#key-form').addEventListener('submit', (e) => {
 			e.preventDefault();

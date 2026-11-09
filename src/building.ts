@@ -1,7 +1,7 @@
 // The inside of a town's buildings, on the ship's grid like a dungeon, so the plan, the key, solo play and the
 // tabletop file all carry over. A building is a box cut into bands of rooms, from the street at the front (south)
 // to the back; upstairs is a landing with rooms either side, reached by stairs in the front room's corner. Under an
-// inn or a tavern is a cellar, down a ladder from the store room.
+// inn or a tavern is a cellar, down a ladder from the store room; other buildings have a store room with no trapdoor.
 // All words are Mapsmith's own.
 
 import { fitter, type Fit } from './dungeon';
@@ -77,6 +77,18 @@ const ROLES: Record<string, Role> = {
 		names: ['Store room', 'Pantry'], tint: 6, shut: true,
 		say: ['Casks, sacks and a trapdoor down to the cellar.', 'Shelves of jars, a side of bacon, and a trapdoor with a heavy ring.', 'Everything the house needs for a month, and a trapdoor to the cellar under it.'],
 		fit: (f) => { f.along('barrel', f.head); f.scatter('trapdoor', 1); f.scatter('chest', 1); },
+	},
+	// a store room with no cellar under it: the same fittings, a barrel where the trapdoor would be
+	stock: {
+		names: ['Store room', 'Stock room'], tint: 6, shut: true,
+		say: ['Casks, sacks and crates, stacked to the beams.', 'Shelves of jars and boxes, each one marked in chalk.', 'Everything the house needs for a month, counted twice a year.'],
+		fit: (f) => { f.along('barrel', f.head); f.scatter('barrel', 1); f.scatter('chest', 1); },
+	},
+	// a temple's store, behind the sanctuary
+	offerings: {
+		names: ['Store room'], tint: 6, shut: true,
+		say: ['Candles by the gross, oil for the lamps, and spare vestments folded in a chest.', 'Offerings waiting to be sold or given away: grain, cloth, a goat\'s worth of cheese.', 'Incense, lamp oil and the plate for feast days, locked away from the nave.'],
+		fit: (f) => { f.along('barrel', f.head); f.scatter('barrel', 1); f.scatter('chest', 1); },
 	},
 	snug: {
 		names: ['Snug', 'Back parlour'], tint: 1,
@@ -358,31 +370,31 @@ const PLANS: Record<BuildingKind, Plan> = {
 		hooks: ['A dice game in the snug has gone on for three days and the stakes keep climbing.', 'The keeper pays someone off every week, and the someone is getting greedy.', 'A brawl last night left a man dead, and nobody saw a thing.', 'A song about the council is going round, and the council wants the singer.'],
 	},
 	shop: {
-		w: [8, 10], bands: [{ d: [4, 5], rooms: ['shop'] }, { d: [3, 4], rooms: ['work', 'store'] }],
+		w: [8, 10], bands: [{ d: [4, 5], rooms: ['shop'] }, { d: [3, 4], rooms: ['work', 'stock'] }],
 		upper: { must: ['parlour'], fill: 'bedroom' },
 		known: ['Goods to the ceiling, and a keeper who knows where every one of them is.', 'The family has run it for three generations; the sign was painted again for each.', 'Fair prices and honest scales, mostly.'],
 		hooks: ['A delivery came that nobody ordered, and someone wants it back badly.', 'The keeper is selling up and leaving town, fast.', 'Stock goes missing every night from a locked store.', 'A buyer paid in coins from a city that burned forty years ago.'],
 	},
 	smithy: {
-		w: [10, 12], bands: [{ d: [5, 6], rooms: ['forge'] }, { d: [3, 4], rooms: ['coal', 'store'] }],
+		w: [10, 12], bands: [{ d: [5, 6], rooms: ['forge'] }, { d: [3, 4], rooms: ['coal', 'stock'] }],
 		upper: { must: ['parlour'], fill: 'bedroom' },
 		known: ['The hammer starts at dawn and the whole street hears it.', 'Horseshoes, hinges and ploughs, and a blade now and then for those who ask quietly.', 'The forge has not gone out in twenty years, and the smith means to keep it that way.'],
 		hooks: ['A sword came in for mending with a crest on it that should not be in this town.', 'Someone wants keys made from wax prints, and the smith does not like it.', 'An apprentice has run off with the best hammer and a debt.', 'Someone wants a cage made, big enough for a person.'],
 	},
 	temple: {
-		w: [10, 12], bands: [{ d: [2, 3], rooms: ['porch'] }, { d: [7, 9], rooms: ['nave'] }, { d: [4, 5], rooms: ['vestry', 'sanctuary', 'store'] }],
+		w: [10, 12], bands: [{ d: [2, 3], rooms: ['porch'] }, { d: [7, 9], rooms: ['nave'] }, { d: [4, 5], rooms: ['vestry', 'sanctuary', 'offerings'] }],
 		by: 'The high priest is',
 		known: ['Its bells mark the hours for the whole town.', 'Old stone, older than anything round it, and cold in every season.', 'The priests feed whoever comes to the side door at dusk.'],
 		hooks: ['A relic has gone from the sanctuary, and a copy has been put in its place.', 'Someone leaves offerings at night to a god this temple does not serve.', 'The crypt under the floor has been sealed for years, and now there are sounds in it.', 'A priest has not said a word since the last funeral.'],
 	},
 	guild: {
-		w: [12, 14], bands: [{ d: [5, 6], rooms: ['hall'] }, { d: [4, 5], rooms: ['counting', 'strong', 'store'] }],
+		w: [12, 14], bands: [{ d: [5, 6], rooms: ['hall'] }, { d: [4, 5], rooms: ['counting', 'strong', 'stock'] }],
 		upper: { must: ['master'], fill: 'meeting' }, by: 'The guildmaster is',
 		known: ['Nobody in the trade works in this town without the guild\'s mark.', 'The richest hall in town, and the members like it seen.', 'Its feast day is the loudest night of the year.'],
 		hooks: ['A guild election is coming, and one candidate has been threatened.', 'The strongroom is short, and the treasurer has left town.', 'A master was thrown out of the guild, and wants back in by any means.', 'The guild is hiring muscle to keep outsiders out of the market.'],
 	},
 	bathhouse: {
-		w: [12, 14], bands: [{ d: [3, 4], rooms: ['changing'] }, { d: [5, 6], rooms: ['cold', 'warm', 'hot'] }, { d: [3, 4], rooms: ['furnace', 'store'] }],
+		w: [12, 14], bands: [{ d: [3, 4], rooms: ['changing'] }, { d: [5, 6], rooms: ['cold', 'warm', 'hot'] }, { d: [3, 4], rooms: ['furnace', 'stock'] }],
 		known: ['Hot water, gossip, and a back room for cards.', 'Old stone baths, older than the town.', 'Everyone comes here, so everyone hears everything.'],
 		hooks: ['The water has started coming up red.', 'A deal is struck in the steam room every week, and someone wants to know what.', 'A bather drowned in water up to their waist.', 'The stokers have found a passage behind the furnace.'],
 	},
@@ -393,7 +405,7 @@ const PLANS: Record<BuildingKind, Plan> = {
 		hooks: ['A page has been cut from the deed book, and only one family benefits.', 'A scholar wants help finding a book the library says it never had.', 'Someone has been reading in the locked stacks at night.', 'A map in the stacks shows a cellar under the town hall that nobody knows about.'],
 	},
 	barracks: {
-		w: [11, 13], bands: [{ d: [4, 5], rooms: ['guard', 'cell'] }, { d: [4, 5], rooms: ['mess', 'armoury', 'store'] }],
+		w: [11, 13], bands: [{ d: [4, 5], rooms: ['guard', 'cell'] }, { d: [4, 5], rooms: ['mess', 'armoury', 'stock'] }],
 		upper: { must: ['captain'], fill: 'bunks' }, by: 'The watch is under',
 		known: ['The town watch, a cell, and a sergeant with a long memory.', 'Drills at dawn, dice at dusk.', 'More of the watch than there used to be, and better armed.'],
 		hooks: ['The watch is hiring, no questions asked.', 'A prisoner escaped, and the cell was still locked.', 'Crossbows have gone missing from the armoury, two at a time.', 'Half the watch is in someone\'s pay, and the captain knows it.'],
@@ -405,7 +417,7 @@ const PLANS: Record<BuildingKind, Plan> = {
 		hooks: ['A horse came back alone with a saddlebag full of letters.', 'The coach is late, three days now.', 'Someone wants a horse that cannot be traced.', 'A stall is kept locked, and something in it kicks the door at night.'],
 	},
 	theatre: {
-		w: [12, 14], bands: [{ d: [3, 4], rooms: ['foyer'] }, { d: [7, 9], rooms: ['house'] }, { d: [4, 5], rooms: ['tiring', 'stage', 'store'] }],
+		w: [12, 14], bands: [{ d: [3, 4], rooms: ['foyer'] }, { d: [7, 9], rooms: ['house'] }, { d: [4, 5], rooms: ['tiring', 'stage', 'stock'] }],
 		by: 'It is run by',
 		known: ['A new play every week, and riots at some of them.', 'The best seats are on the stage, for those who want to be seen.', 'The players are the talk of the town, and the town is the talk of the plays.'],
 		hooks: ['The new play is about a real scandal, and someone wants it stopped.', 'An actor vanished between acts.', 'The prop sword in the second act is real, and someone swapped it.', 'A patron pays for every seat each night and never comes.'],

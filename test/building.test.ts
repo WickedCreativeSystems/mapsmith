@@ -87,3 +87,20 @@ describe('the inside of a building', () => {
 		for (const p of t.places.filter((x) => x.kind !== 'temple')) expect(placeNote(t, p, 'Towns/Map.md')).not.toContain('## Below');
 	});
 });
+
+describe('store rooms', () => {
+	for (const kind of BUILDING_KINDS)
+		for (const seed of ['salt', 'wren', 'a', 'b', 'c', 'saltmarch'])
+			it(`${kind} ${seed}: only a building with a cellar has a store room trapdoor`, () => {
+				const g = generateBuilding(kind, seed);
+				const cellar = g.decks.some((d) => d.name === CELLAR);
+				expect(cellar).toBe(['inn', 'tavern'].includes(kind));
+				if (cellar) return;
+				for (const d of g.decks) {
+					// a theatre's stage has a trapdoor of its own; a store room never does without a cellar
+					const stores = keyEntries(d).filter((e) => /Store|Stock/.test(e.name));
+					for (const e of stores) expect(e.notes).not.toMatch(/trapdoor|cellar/i);
+					for (const st of d.stamps) if (st.kind === 'trapdoor') expect(d.key[cellAt(d, st.x, st.y)]?.name).not.toMatch(/Store|Stock/);
+				}
+			});
+});

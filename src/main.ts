@@ -28,6 +28,8 @@ const BUILDING_TEXT: Record<string, string> = { inn: 'Inn', tavern: 'Tavern', sh
 export const SERVER = 'https://bulkhead.bananafest-destiny.com';
 /** Where Mapsmith Pro is sold. */
 export const BUY = 'https://bananafestdestiny.itch.io/mapsmith-pro';
+/** The plugin's own Pro link: a 302 to BUY, so the site's log counts clicks from Obsidian. */
+export const BUY_OBSIDIAN = `${SERVER}/go/pro/obsidian`;
 
 interface Settings {
 	key: string;
@@ -36,6 +38,8 @@ interface Settings {
 
 export default class MapsmithPlugin extends Plugin {
 	settings: Settings = { key: '', vtt: false };
+	/** Where the buy links in notices and the preview go. The web page sets it back to BUY, which its own counter watches. */
+	buy = BUY_OBSIDIAN;
 	/** The room just walked into in solo play, so the redrawn map opens on it. */
 	entered: { path: string; num: number } | null = null;
 
@@ -160,14 +164,14 @@ export default class MapsmithPlugin extends Plugin {
 		const old = this.app.vault.getAbstractFileByPath(path);
 		if (old instanceof TFile) await this.app.vault.modifyBinary(old, bin);
 		else await this.app.vault.createBinary(path, bin);
-		const more = this.settings.vtt ? '' : ` To bring the walls and doors with it into Roll20 or Foundry, see Save for virtual tabletop: ${BUY}`;
+		const more = this.settings.vtt ? '' : ` To bring the walls and doors with it into Roll20 or Foundry, see Save for virtual tabletop: ${this.buy}`;
 		new Notice(`Saved ${path}, ${w} by ${h} squares of ${data.resolution.pixels_per_grid} pixels.${more}`);
 	}
 
 	/** Writes a Universal VTT file next to the note: the players' map, its walls, doors and lights. */
 	async saveVtt(data: UVTT, svg: SvgNode, name: string, sourcePath: string, more = '') {
 		if (!this.settings.vtt) {
-			new ProPreview(this.app, data, await this.drawPng(data, svg), BUY).open();
+			new ProPreview(this.app, data, await this.drawPng(data, svg), this.buy).open();
 			return;
 		}
 		data.image = await this.drawPng(data, svg);

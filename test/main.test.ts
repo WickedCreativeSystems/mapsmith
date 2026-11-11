@@ -118,7 +118,7 @@ describe('saving for a virtual tabletop', () => {
 		await flush();
 		const box = Modal.last!.contentEl;
 		expect(box.textContent).toMatch(/This one has \d+ walls, \d+ doors?/);
-		expect(box.querySelector('a.mod-cta')!.getAttribute('href')).toBe('https://bananafestdestiny.itch.io/mapsmith-pro');
+		expect(box.querySelector('a.mod-cta')!.getAttribute('href')).toBe('https://bulkhead.bananafest-destiny.com/go/pro/obsidian');
 		expect(box.textContent).toContain('Pro key');
 	});
 
@@ -141,7 +141,7 @@ describe('saving for a virtual tabletop', () => {
 		expect(saved[0]).toMatch(/^Towns\/.+-\d+x\d+\.png$/);
 		expect(new Uint8Array(app.vault.binaries.get(saved[0]!)!)[1]).toBe(0x50);
 		expect(Notice.last).toContain('squares of 70 pixels');
-		expect(Notice.last).toContain('itch.io/mapsmith-pro');
+		expect(Notice.last).toContain('/go/pro/obsidian');
 	});
 
 	it('turns saving on for a key the server knows, and off for one it does not', async () => {

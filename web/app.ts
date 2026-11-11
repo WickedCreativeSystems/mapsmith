@@ -2,7 +2,7 @@
 // download; the Pro key is checked against the same server as in Obsidian and remembered here.
 import { App, Notice, installDomHelpers, requestUrl } from '../test/obsidian-shim';
 import type { UVTT } from '../src/vtt';
-import MapsmithPlugin from '../src/main';
+import MapsmithPlugin, { BUY } from '../src/main';
 import { drawPreview, previewCount } from '../src/preview';
 
 installDomHelpers();
@@ -40,6 +40,7 @@ const linked = fromHash(location.hash);
 const app = new App();
 app.notes.set(NOTE, { path: NOTE, content: linked.includes('seed:') ? fence(linked) : load().block ?? fence(BLOCKS.town!) });
 const plugin = new MapsmithPlugin(app as never, { id: 'mapsmith' } as never);
+plugin.buy = BUY;
 const p = plugin as never as { data: unknown; saveData: (d: unknown) => Promise<void>; settings: { key: string; vtt: boolean }; checkKey(): Promise<string>; mailKey(e: string): Promise<string>; codeBlocks: Record<string, Proc> };
 p.data = load().data ?? null;
 p.saveData = async (d) => { p.data = d; store({ data: d }); };

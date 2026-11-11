@@ -1,7 +1,7 @@
 // Browser demo: runs the real Mapsmith plugin against the test shim over one note, with the block's text shown
 // beside the map so you can see the buttons rewrite it.
 import { App, Notice, installDomHelpers } from '../test/obsidian-shim';
-import MapsmithPlugin from '../src/main';
+import MapsmithPlugin, { SERVER } from '../src/main';
 
 installDomHelpers();
 
@@ -17,6 +17,7 @@ type Proc = (src: string, el: HTMLElement, c: Ctx) => void;
 const app = new App();
 app.notes.set('Saltmarch.md', { path: 'Saltmarch.md', content: START });
 const plugin = new MapsmithPlugin(app as never, { id: 'mapsmith' } as never);
+plugin.buy = `${SERVER}/go/pro/press`;
 plugin.onload();
 const proc = (plugin as never as { codeBlocks: Record<string, Proc> }).codeBlocks.mapsmith!;
 const note = () => app.notes.get('Saltmarch.md')!.content;

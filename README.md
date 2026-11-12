@@ -6,7 +6,7 @@ A map generator for TTRPGs: fantasy towns and the country around them, dungeons 
 
 No Obsidian? [Mapsmith runs in your browser too](https://bulkhead.bananafest-destiny.com/mapsmith/): the same maps and the same saves, and one Pro key works in both. It's also [free to play on itch](https://bananafestdestiny.itch.io/mapsmith-web).
 
-Mapsmith is free. [Mapsmith Pro](#pro), $6 once, saves any map for Roll20 or Foundry with its walls, doors and lights.
+Mapsmith is free. [Mapsmith Pro](#pro), $6 once, saves any map for Roll20, Foundry or [Atlas VTT](https://github.com/atlas-vtt/atlas-vtt) with its walls, doors and lights.
 
 Put a `mapsmith` block in a note and you get a walled town, a river village or a harbour city, with its streets, wards, bridges, gates, docks, fields and woods. The same seed always draws the same town, so a map in your campaign notes never changes under you.
 
@@ -173,7 +173,7 @@ Everything above is free. [Mapsmith Pro](https://bulkhead.bananafest-destiny.com
 
 ![A crypt saved with Pro: the players' map with its walls drawn in red and its doors in blue, as a virtual tabletop reads them](docs/pro.jpg)
 
-In a town every building and the town wall are walls and the gates are doors, on a grid of five metres a square (ten on a large town or city). A region is saved as an overland map with the place names on it, a kilometre a square, for travel. Roll20 imports it as it is, and Foundry reads it with the Universal Battlemap Importer module ([how to load it in each](https://bulkhead.bananafest-destiny.com/dungeon-map-generator/)). On Foundry 13 or 14 you can skip the file: [Mapsmith for Foundry](https://bulkhead.bananafest-destiny.com/mapsmith/foundry/) is a module that makes the scene from a seed, with its walls, doors and lights, using the same key. Its source is in the `foundry/` folder.
+In a town every building and the town wall are walls and the gates are doors, on a grid of five metres a square (ten on a large town or city). A region is saved as an overland map with the place names on it, a kilometre a square, for travel. Roll20 imports it as it is, and so does Atlas VTT, the battle-map plugin for Obsidian, so you can run the map in the same vault you made it in (Atlas leaves out barred gates, which it reads as windows). Foundry reads it with the Universal Battlemap Importer module ([how to load it in each](https://bulkhead.bananafest-destiny.com/dungeon-map-generator/)). On Foundry 13 or 14 you can skip the file: [Mapsmith for Foundry](https://bulkhead.bananafest-destiny.com/mapsmith/foundry/) is a module that makes the scene from a seed, with its walls, doors and lights, using the same key. Its source is in the `foundry/` folder.
 
 After you buy, copy your download page's address. Paste it into Mapsmith's settings under **Pro key** and press **Check**. Pro stays on in that vault from then on. Lost it? Type the email you bought with under **Lost your key?**.
 

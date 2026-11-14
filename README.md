@@ -57,6 +57,8 @@ Press **Explore** to play the town on your own. You know the streets but not who
 
 Add `map: region` for the country around your towns, about 40 km across: towns and villages along a river or the shore, roads between them that go round high ground, woods, hills, and the odd ruined keep, barrow or old mine at the end of a track.
 
+For a numbered hex grid to travel across day by day, with fog of war and something in every hex, there's [Hexwright](https://github.com/WickedCreativeSystems/hexwright). Its hex notes put a `mapsmith` block in each town and ruin, so Mapsmith draws the streets or the dungeon right there.
+
 ````
 ```mapsmith
 map: region

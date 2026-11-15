@@ -243,3 +243,10 @@ export function base64ToArrayBuffer(b: string): ArrayBuffer {
 	for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
 	return u.buffer;
 }
+
+/** Obsidian's Platform: on the web pages a phone or tablet (coarse pointer) counts as mobile. */
+export const Platform = {
+	get isMobile() {
+		return typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+	},
+};

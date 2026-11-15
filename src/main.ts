@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, Plugin, PluginSettingTab, SettingDefinitionItem, TFile, base64ToArrayBuffer, normalizePath, requestUrl } from 'obsidian';
+import { App, Editor, MarkdownPostProcessorContext, MarkdownRenderChild, Notice, Platform, Plugin, PluginSettingTab, SettingDefinitionItem, TFile, base64ToArrayBuffer, normalizePath, requestUrl } from 'obsidian';
 import { BUILDING_KINDS, CELLAR, buildingFor, generateBuilding } from './building';
 import { DUNGEON_KINDS, DUNGEON_SIZES, generateDungeon } from './dungeon';
 import { SHIP_SIZES, editBlock, newSeed, noteName, parseBlock, placeNote, regionNote, roomNote, setKey, type BuildingOptions, type DungeonOptions, type Key, type ShipOptions } from './block';
@@ -14,6 +14,9 @@ import { buildingPaint, dungeonPaint, shipPainted, townPaint } from './paint';
 import { SIZES, TERRAINS, WATERS, generateTown, type Place, type Town } from './town';
 import { onTheWay, walk } from './townplay';
 import { gridPixels, regionUvttData, svgToPng, townMetres, townUvttData, uvttData, type UVTT } from './vtt';
+
+/** "Click" on a desktop, "Tap" on a phone or tablet, for the hints under the maps. */
+const click = () => (Platform.isMobile ? 'Tap' : 'Click');
 
 const SIZE_TEXT: Record<string, string> = { hamlet: 'Hamlet', village: 'Village', town: 'Town', 'large-town': 'Large town', city: 'City' };
 const WATER_TEXT: Record<string, string> = { none: 'No water', river: 'River', coast: 'Coast', estuary: 'River mouth', lake: 'Lake' };
@@ -279,7 +282,7 @@ class TownMap extends MarkdownRenderChild {
 				this.picked = came.num - 1;
 				this.plugin.entered = null;
 			}
-			const left = solo.ways.length ? ' Click a question mark to walk there.' : '';
+			const left = solo.ways.length ? ` ${click()} a question mark to walk there.` : '';
 			root.insertBefore(createDiv({ cls: 'mapsmith-hint', text: `${solo.seen.size} of ${t.places.length} places visited.${left}` }), frame);
 		}
 		const svg = toDom(renderTown(t, { palette: dark ? DARK : LIGHT, walked: solo, paint: plain ? undefined : townPaint(dark) }), frame);
@@ -362,7 +365,7 @@ class TownMap extends MarkdownRenderChild {
 			card.empty();
 			const s = R.sites[i];
 			if (!s) {
-				card.createDiv({ cls: 'mapsmith-hint', text: 'Click a number to see the place. Its note has a map of the town, or of the ruin.' });
+				card.createDiv({ cls: 'mapsmith-hint', text: `${click()} a number to see the place. Its note has a map of the town, or of the ruin.` });
 				return;
 			}
 			const head = card.createDiv({ cls: 'mapsmith-card-head' });
@@ -385,7 +388,15 @@ class TownMap extends MarkdownRenderChild {
 			items.forEach((li, k) => li.toggleClass('is-picked', k === i));
 			show(i);
 		};
-		items.forEach((li, i) => li.addEventListener('click', () => pick(i)));
+		items.forEach((li, i) =>
+			li.addEventListener('click', () => {
+				pick(i);
+				// the card sits above the list; on a phone a pick low in the list would leave it off screen (center, not nearest: the mobile header floats over the top)
+				const card = svg.closest('.mapsmith')?.querySelector('.mapsmith-card');
+				const r = card?.getBoundingClientRect();
+				if (card && r && (r.top < 80 || r.bottom > (card.ownerDocument.defaultView?.innerHeight ?? 0))) card.scrollIntoView({ block: 'center', behavior: 'smooth' });
+			}),
+		);
 		svg.addEventListener('click', (ev) => {
 			const hit = (ev.target as Element | null)?.closest('[data-place]');
 			if (hit) pick(Number(hit.getAttribute('data-place')));
@@ -517,7 +528,7 @@ class TownMap extends MarkdownRenderChild {
 				this.picked = rooms.findIndex((r) => r.num === came.num);
 				this.plugin.entered = null;
 			}
-			const left = solo.fog.ways.length ? ' Click a question mark to go through that door.' : solo.fog.rooms.size < rooms.length ? ' No open door leads on. The rest is behind secret doors: open a room and search it.' : '';
+			const left = solo.fog.ways.length ? ` ${click()} a question mark to go through that door.` : solo.fog.rooms.size < rooms.length ? ' No open door leads on. The rest is behind secret doors: open a room and search it.' : '';
 			root.createDiv({ cls: 'mapsmith-hint', text: `${solo.fog.rooms.size} of ${rooms.length} rooms explored.${left}` });
 		}
 		const story = root.createEl('details', { cls: 'mapsmith-story' });
@@ -561,7 +572,7 @@ class TownMap extends MarkdownRenderChild {
 	drawRoom(card: HTMLElement, r: RoomInfo | undefined, ship: string, deck: string | undefined, what: 'ship' | 'dungeon' | 'building' = 'ship', search?: () => void) {
 		card.empty();
 		if (!r) {
-			card.createDiv({ cls: 'mapsmith-hint', text: 'Click a number to see what is in that room.' });
+			card.createDiv({ cls: 'mapsmith-hint', text: `${click()} a number${Platform.isMobile ? ', or a name in the list below,' : ''} to see what is in that room.` });
 			return;
 		}
 		const head = card.createDiv({ cls: 'mapsmith-card-head' });
@@ -585,7 +596,7 @@ class TownMap extends MarkdownRenderChild {
 	drawCard(card: HTMLElement, t: Town, p: Place | undefined, way?: string) {
 		card.empty();
 		if (!p) {
-			card.createDiv({ cls: 'mapsmith-hint', text: `Click a number or a building with one to see who's there.` });
+			card.createDiv({ cls: 'mapsmith-hint', text: `${click()} a number or a building with one to see who's there.` });
 			return;
 		}
 		const head = card.createDiv({ cls: 'mapsmith-card-head' });

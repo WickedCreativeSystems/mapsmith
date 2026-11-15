@@ -1,4 +1,4 @@
-// Universal VTT (.dd2vtt): the file Dungeondraft writes and Roll20 imports and Foundry reads with the Universal Battlemap Importer module.
+// Universal VTT (.dd2vtt): the file Dungeondraft writes and Roll20 uploads and Foundry reads with the Universal Battlemap Importer module.
 // Checked 29 Oct against two importers' source: Foundry's DD-Import and uvtt2fgu. Points are in grid squares from
 // map_origin, y down; a wall is a polyline; a portal's bounds are the door's two ends, and closed: false is a window.
 import { bounds, Deck, sideDelta, stampSize, vttWalls } from './ship/model';

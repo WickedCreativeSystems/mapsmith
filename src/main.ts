@@ -179,7 +179,7 @@ export default class MapsmithPlugin extends Plugin {
 		const old = this.app.vault.getAbstractFileByPath(path);
 		if (old instanceof TFile) await this.app.vault.modify(old, JSON.stringify(data));
 		else await this.app.vault.create(path, JSON.stringify(data));
-		new Notice(`Saved ${path}.${more} Roll20 imports it as it is; Foundry reads it with the Universal Battlemap Importer module.`);
+		new Notice(`Saved ${path}.${more} Roll20 takes it from Create Page, Upload Background (walls and lights need a paid Roll20 plan); Foundry reads it with the Universal Battlemap Importer module.`);
 	}
 }
 

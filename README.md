@@ -6,7 +6,7 @@ A map generator for TTRPGs: fantasy towns and the country around them, dungeons 
 
 No Obsidian? [Mapsmith runs in your browser too](https://bulkhead.bananafest-destiny.com/mapsmith/): the same maps and the same saves, and one Pro key works in both. It's also [free to play on itch](https://bananafestdestiny.itch.io/mapsmith-web).
 
-Mapsmith is free. [Mapsmith Pro](#pro), $6 once, saves any map for Roll20, Foundry or [Atlas VTT](https://github.com/atlas-vtt/atlas-vtt) with its walls, doors and lights.
+Mapsmith is free. [Mapsmith Pro](#pro), $6 once, saves any map for Foundry, [Atlas VTT](https://github.com/atlas-vtt/atlas-vtt) or Roll20 with its walls, doors and lights (walls and lights in Roll20 need a paid Roll20 plan).
 
 Put a `mapsmith` block in a note and you get a walled town, a river village or a harbour city, with its streets, wards, bridges, gates, docks, fields and woods. The same seed always draws the same town, so a map in your campaign notes never changes under you.
 
